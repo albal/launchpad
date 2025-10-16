@@ -1,6 +1,6 @@
 esp_toml_version = 1.0
 
-firmware_images_url = "https://github.com/albal/keybot/releases/download/v0.1.1/"
+firmware_images_url = "https://firmware-proxy.netlify.app/.netlify/functions/get-firmware"
 
 
 supported_apps = ["keybot"]
