@@ -31,7 +31,7 @@ export function getImageData(fileURL) {
             throw new Error(`HTTP error! status: ${response.status}`);
         })
         .then(blob => {
-            var reader = new FileReader();
+            const reader = new FileReader();
             reader.onload = (function (theFile) {
                 return function (e) {
                     resolve(e.target.result);
