@@ -21,27 +21,28 @@ export function resizeTerminal(fitAddon) {
 
 export function getImageData(fileURL) {
     return new Promise(resolve => {
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', fileURL, true);
-        xhr.responseType = "blob";
-        xhr.send();
-        xhr.onload = function () {
-            if (xhr.readyState === 4 && xhr.status === 200) {
-                var blob = new Blob([xhr.response], { type: "application/octet-stream" });
-                var reader = new FileReader();
-                reader.onload = (function (theFile) {
-                    return function (e) {
-                        resolve(e.target.result);
-                    };
-                })(blob);
-                reader.readAsBinaryString(blob);
-            } else {
-                resolve(undefined);
+        fetch(fileURL, {
+            redirect: 'follow'
+        })
+        .then(response => {
+            if (response.ok) {
+                return response.blob();
             }
-        };
-        xhr.onerror = function () {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        })
+        .then(blob => {
+            const reader = new FileReader();
+            reader.onload = (function (theFile) {
+                return function (e) {
+                    resolve(e.target.result);
+                };
+            })(blob);
+            reader.readAsBinaryString(blob);
+        })
+        .catch(error => {
+            console.error('Error fetching firmware image from', fileURL, ':', error);
             resolve(undefined);
-        }
+        });
     });
 }
 
