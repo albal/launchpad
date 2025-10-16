@@ -21,7 +21,19 @@ export function resizeTerminal(fitAddon) {
 
 export function getImageData(fileURL) {
     return new Promise(resolve => {
-        fetch(fileURL, {
+        // Handle CORS issues with GitHub release URLs
+        let fetchURL = fileURL;
+        let useCorsProxy = false;
+        
+        if (fileURL.includes('github.com') && fileURL.includes('/releases/download/')) {
+            // GitHub release URLs don't have CORS headers, so we need to use a proxy
+            // Using ghproxy.com which is specifically designed for GitHub content
+            fetchURL = `https://ghproxy.com/${fileURL}`;
+            useCorsProxy = true;
+            console.log('Detected GitHub release URL, using CORS proxy:', fetchURL);
+        }
+        
+        fetch(fetchURL, {
             redirect: 'follow'
         })
         .then(response => {
@@ -41,7 +53,35 @@ export function getImageData(fileURL) {
         })
         .catch(error => {
             console.error('Error fetching firmware image from', fileURL, ':', error);
-            resolve(undefined);
+            
+            // If the proxy failed and we haven't tried the direct URL yet, try it as a fallback
+            if (useCorsProxy) {
+                console.log('Proxy failed, attempting direct fetch (may have CORS issues)');
+                fetch(fileURL, {
+                    redirect: 'follow'
+                })
+                .then(response => {
+                    if (response.ok) {
+                        return response.blob();
+                    }
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                })
+                .then(blob => {
+                    const reader = new FileReader();
+                    reader.onload = (function (theFile) {
+                        return function (e) {
+                            resolve(e.target.result);
+                        };
+                    })(blob);
+                    reader.readAsBinaryString(blob);
+                })
+                .catch(directError => {
+                    console.error('Direct fetch also failed:', directError);
+                    resolve(undefined);
+                });
+            } else {
+                resolve(undefined);
+            }
         });
     });
 }

@@ -45,3 +45,14 @@ Once ready, you can use the following image and URL for supporting ESP Launchpad
     <img alt="Try it with ESP Launchpad" src="https://espressif.github.io/esp-launchpad/assets/try_with_launchpad.png" width="250" height="70">
 </a>
 ```
+
+## Using GitHub Release URLs
+
+If you're hosting firmware images on GitHub releases, please note that GitHub doesn't set CORS headers on release assets. ESP Launchpad automatically detects GitHub release URLs (URLs containing `github.com` and `/releases/download/`) and routes them through a CORS proxy ([ghproxy.com](https://ghproxy.com)) to avoid CORS errors.
+
+**GitHub Release URL format:** `https://github.com/user/repo/releases/download/tag/file.bin`
+
+If you experience issues with the default proxy, consider these alternatives:
+- Host your firmware files on GitHub Pages instead of releases
+- Use a CDN service that supports CORS
+- Host files on a server with proper CORS headers
