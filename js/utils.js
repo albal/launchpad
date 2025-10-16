@@ -27,24 +27,20 @@ export function getImageData(fileURL) {
         .then(response => {
             if (response.ok) {
                 return response.blob();
-            } else {
-                resolve(undefined);
-                return null;
             }
+            throw new Error(`HTTP error! status: ${response.status}`);
         })
         .then(blob => {
-            if (blob) {
-                var reader = new FileReader();
-                reader.onload = (function (theFile) {
-                    return function (e) {
-                        resolve(e.target.result);
-                    };
-                })(blob);
-                reader.readAsBinaryString(blob);
-            }
+            var reader = new FileReader();
+            reader.onload = (function (theFile) {
+                return function (e) {
+                    resolve(e.target.result);
+                };
+            })(blob);
+            reader.readAsBinaryString(blob);
         })
         .catch(error => {
-            console.error('Error fetching firmware image:', error);
+            console.error('Error fetching firmware image from', fileURL, ':', error);
             resolve(undefined);
         });
     });
